@@ -1,0 +1,42 @@
+services:
+  app:
+    image: opengrc
+    container_name: opengrc-app
+    hostname: opengrc-app
+    depends_on:
+      - database
+    ports:
+      - 8080:8080
+    environment:
+      - DB_FRESH=${DB_FRESH:-false}
+      - TZ=Asia/Jakarta
+      - APP_ENV=${APP_ENV}
+      - APP_DEBUG=${APP_DEBUG}
+      - DB_CONNECTION="pgsql"
+      - DB_HOST="opengrc-database"
+      - DB_PORT="5432"
+      - DB_DATABASE="${DB_DATABASE}"
+      - DB_USERNAME="${DB_USERNAME}"
+      - DB_PASSWORD="${DB_PASSWORD}"
+    networks:
+      - default
+  database:
+    image: postgres
+    container_name: opengrc-database
+    hostname: opengrc-database
+    ports:
+      - 5432:5432
+    environment:
+      - TZ=Asia/Jakarta
+      - POSTGRES_DB=${DB_DATABASE}
+      - POSTGRES_USER=${DB_USERNAME}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    networks:
+      - default
+    volumes:
+      - database:/var/lib/postgresql
+      - ./opengrc.sql:/docker-entrypoint-initdb.d/opengrc.sql:ro
+networks:
+  default:
+volumes:
+  database:

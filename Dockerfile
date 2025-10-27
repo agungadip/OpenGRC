@@ -4,13 +4,19 @@ FROM php:8.3-apache AS base
 # Install needed Debian/Ubuntu packages
 # ------------------------------------------------
 RUN apt-get clean && apt-get update && apt-get install -y \
+    libpq-dev \
+    libjpeg-dev \
     libpng-dev \
+    libfreetype6-dev \
     libzip-dev \
     libicu-dev \
     zip \
-    unzip 
+    unzip \
+    git
 
-RUN docker-php-ext-install pdo pdo_mysql bcmath intl zip gd
+RUN docker-php-ext-install pdo pdo_mysql pdo_pgsql bcmath intl zip gd
+
+RUN docker-php-ext-configure gd --with-jpeg
 
 ##############################
 # 1) Stage: Build everything
@@ -135,6 +141,8 @@ RUN echo "<Directory /var/www/html/public>\n\
 RUN echo "ServerName 0.0.0.0" >> /etc/apache2/apache2.conf
 
 COPY ./entrypoint.sh /entrypoint.sh
+
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod 755 /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
